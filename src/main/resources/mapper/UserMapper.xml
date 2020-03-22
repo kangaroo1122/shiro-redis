@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kangaroohy.shiroredis.mapper.UserMapper">
+
+    <resultMap id="userInfoMap" type="com.kangaroohy.shiroredis.domain.entity.vo.UserVO" >
+        <id property="id" column="u_id" />
+        <result property="username" column="u_username"/>
+        <result property="password" column="u_password"/>
+        <result property="gender" column="u_gender"/>
+        <result property="updateTime" column="u_updateTime"/>
+        <collection property="roleList" ofType="com.kangaroohy.shiroredis.domain.entity.vo.RoleVO" >
+            <id property="role.id" column="r_id" />
+            <result property="role.name" column="r_name"/>
+            <result property="role.description" column="r_description"/>
+            <collection property="permissionList" ofType="com.kangaroohy.shiroredis.domain.entity.po.Permission" >
+                <id property="id" column="p_id" />
+                <result property="name" column="p_name"/>
+                <result property="url" column="p_url"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <insert id="insertUser">
+        INSERT INTO t_user (username, password, gender) VALUES (#{username}, #{password}, #{gender.code})
+    </insert>
+
+    <select id="findUserInfoByUsername" resultMap="userInfoMap">
+        SELECT
+            u.id u_id,
+            u.username u_username,
+            u.password u_password,
+            u.gender u_gender,
+            u.update_time u_updateTime,
+            r.id r_id,
+            r.name r_name,
+            r.description r_description,
+            p.id p_id,
+            p.name p_name,
+            p.url p_url
+        FROM
+            t_user u
+        LEFT JOIN t_user_role ur ON ur.uid = u.id
+        LEFT JOIN t_role r ON r.id = ur.rid
+        LEFT JOIN t_role_permission rp ON rp.rid = r.id
+        LEFT JOIN t_permission p ON p.id = rp.pid
+        WHERE
+            u.username = #{username}
+    </select>
+</mapper>
